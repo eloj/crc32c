@@ -1,7 +1,7 @@
 OPT=-O3 -fomit-frame-pointer -funroll-loops -fstrict-aliasing -march=native -mtune=native -msse4.2
 MISCFLAGS=-fstack-protector -fvisibility=hidden
-WARNFLAGS=-W -Wall -Wno-unused-parameter -Wno-unused-function
-CFLAGS=-std=c11 -W -Wall $(OPT) $(MISCFLAGS) $(WARNFLAGS)
+WARNFLAGS=-W -Wall -Werror -Wno-unused-parameter -Wno-unused-function
+CFLAGS=-std=c11 $(OPT) $(MISCFLAGS) $(WARNFLAGS)
 CXXFLAGS=-std=gnu++17 -fno-rtti $(OPT) $(MISCFLAGS) $(WARNFLAGS)
 
 all: crc32c-argv crc32c-stdin
