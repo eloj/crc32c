@@ -3,6 +3,9 @@
 
 	$ ./crc32c-stdin 123456789
 */
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "crc32c.c"
 
 int main(int argc, char *argv[]) {

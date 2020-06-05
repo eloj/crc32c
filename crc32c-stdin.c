@@ -3,7 +3,10 @@
 
 	$ ./crc32c-stdin < crc32-stdin.c
 */
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+
 #include "crc32c.c"
 
 int main(int argc, char *argv[]) {

@@ -14,17 +14,15 @@
 
 	$ gcc -std=c11 -O3 -msse4.2 crc32c.c
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <stdint.h>
+#include "crc32c.h"
+
 #include <string.h>
 
 /*
 	Calculate the CRC32c of a block of memory, in 8-bit units.
 */
 __attribute__ ((target ("sse4.2")))
-static uint32_t crc32c_8(uint32_t crc, const void *data, size_t len) {
+uint32_t crc32c_8(uint32_t crc, const void *data, size_t len) {
 	const uint8_t *src = data;
 
 	for (size_t i=0 ; i < len ; ++i) {
@@ -38,7 +36,7 @@ static uint32_t crc32c_8(uint32_t crc, const void *data, size_t len) {
 	Calculate the CRC32c of a block of memory, in 32-bit units.
 */
 __attribute__ ((target ("sse4.2")))
-static uint32_t crc32c_32(uint32_t crc, const void *data, size_t len) {
+uint32_t crc32c_32(uint32_t crc, const void *data, size_t len) {
 	const uint8_t *src = data;
 
 	for (size_t i=0 ; i < len >> 2; ++i) {
@@ -66,7 +64,7 @@ static uint32_t crc32c_32(uint32_t crc, const void *data, size_t len) {
 	Calculate the CRC32c of a block of memory, in 64-bit units.
 */
 __attribute__ ((target ("sse4.2")))
-static uint32_t crc32c_64(uint32_t crc, const void *data, size_t len) {
+uint32_t crc32c_64(uint32_t crc, const void *data, size_t len) {
 	const uint8_t *src = data;
 
 	for (size_t i=0 ; i < len >> 3; ++i) {
