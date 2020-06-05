@@ -8,7 +8,7 @@ all: crc32c-argv crc32c-stdin
 
 crc32c-argv: crc32c-argv.c
 crc32c-stdin: crc32c-stdin.c
-hash-bench: hash-bench.cpp crc32c.o
+hash-bench: hash-bench.cpp crc32c.o fnv.o
 	$(CXX) $(CXXFLAGS) $+ -lbenchmark -pthread -o $@
 
 .PHONY: clean bench
@@ -17,4 +17,4 @@ bench: hash-bench
 	./hash-bench
 
 clean:
-	rm -f crc32c.o crc32c-argv crc32c-stdin hash-bench
+	rm -f fnv.o crc32c.o crc32c-argv crc32c-stdin hash-bench

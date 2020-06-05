@@ -9,6 +9,7 @@
 
 #include <benchmark/benchmark.h>
 #include "crc32c.h"
+#include "fnv.h"
 
 static void* read_file(const char *filename, size_t *limit) {
 	void *keys = NULL;
@@ -105,8 +106,23 @@ BENCHMARK_DEFINE_F(FileHash, crc32c_8)(benchmark::State &state) {
 	UpdateCounters(state);
 }
 
+BENCHMARK_DEFINE_F(FileHash, fnv1a_32)(benchmark::State &state) {
+	for (auto _ : state) {
+		size_t bytes_left = state.range(0);
+		uint32_t hash = FNV_BASIS_32;
+
+		while (bytes_left) {
+			size_t block_len = std::min(len, bytes_left);
+			benchmark::DoNotOptimize(hash = fnv1a_32(hash, src, block_len));
+			bytes_left -= block_len;
+		}
+	}
+	UpdateCounters(state);
+}
+
 BENCHMARK_REGISTER_F(FileHash, crc32c_64)->RangeMultiplier(16)->Range(1, 1 << 24);
 BENCHMARK_REGISTER_F(FileHash, crc32c_32)->RangeMultiplier(16)->Range(1, 1 << 24);
 BENCHMARK_REGISTER_F(FileHash, crc32c_8)->RangeMultiplier(16)->Range(1, 1 << 24);
+BENCHMARK_REGISTER_F(FileHash, fnv1a_32)->RangeMultiplier(16)->Range(1, 1 << 24);
 
 BENCHMARK_MAIN();

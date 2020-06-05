@@ -18,6 +18,33 @@ Most people probably do _not_ have a use for CRC32c specifically, but a CRC can
 be used as a general hash function too in some cases, _except_ where there's a risk
 for [hash-flooding](https://www.google.com/search?q=hash-flooding) attacks of course.
 
+Sometimes you just want something simple that you can quickly type or copy and paste into
+your code to get going, that's when this may be appropriate.
+
+For comparison, I've included a naïve implementation of the 32-bit [fnv-1a hash](https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function).
+This hash is often recommended because it's very simple to implement, but in practice
+it is also slower than even the slowest CRC32c version, which is also trivial,
+never mind the one that consumes 8-bytes at a time:
+
+```
+FileHash/crc32c_64/16             6.67 ns         6.67 ns    104924455 bytes_per_second=2.23387G/s
+FileHash/crc32c_64/256            14.9 ns         14.9 ns     46896722 bytes_per_second=15.9996G/s
+FileHash/crc32c_64/4096            465 ns          465 ns      1505399 bytes_per_second=8.20575G/s
+FileHash/crc32c_64/65536          7753 ns         7753 ns        90290 bytes_per_second=7.87262G/s
+FileHash/crc32c_64/1048576      124573 ns       124566 ns         5630 bytes_per_second=7.83971G/s
+FileHash/crc32c_64/16777216    1989719 ns      1989606 ns          352 bytes_per_second=7.85332G/s
+...
+FileHash/fnv1a_32/16              10.4 ns         10.4 ns     67782311 bytes_per_second=1.43716G/s
+FileHash/fnv1a_32/256              294 ns          294 ns      2379275 bytes_per_second=830.064M/s
+FileHash/fnv1a_32/4096            4952 ns         4952 ns       141357 bytes_per_second=788.885M/s
+FileHash/fnv1a_32/65536          79484 ns        79473 ns         8806 bytes_per_second=786.43M/s
+FileHash/fnv1a_32/1048576      1272001 ns      1271820 ns          550 bytes_per_second=786.275M/s
+FileHash/fnv1a_32/16777216    20350940 ns     20348028 ns           34 bytes_per_second=786.317M/s
+```
+
+Something like [xxhash](https://github.com/Cyan4973/xxHash) will be faster still, but now we've left
+the domain of "easy to just copy'n'paste or implement from scratch" behind.
+
 ## Alternative implementations
 
 I've provided `crc32c_64` which consumes blocks of 64-bits, then a 32-bit word
