@@ -21,25 +21,41 @@ for [hash-flooding](https://www.google.com/search?q=hash-flooding) attacks of co
 Sometimes you just want something simple that you can quickly type or copy and paste into
 your code to get going, that's when this may be appropriate.
 
+```c
+uint32_t crc32c_8(uint32_t crc, const uint8_t *src, size_t len) {
+	for (size_t i=0 ; i < len ; ++i) {
+		crc = __builtin_ia32_crc32qi(crc, src[i]);
+	}
+	return crc;
+}
+```
+
 For comparison, I've included a naïve implementation of the 32-bit [fnv-1a hash](https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function).
 This hash is often recommended because it's very simple to implement, but in practice
 it is also slower than even the slowest CRC32c version, which is also trivial,
 never mind the one that consumes 8-bytes at a time:
 
 ```
+FileHash/fnv1a/16                 10.4 ns         10.4 ns     67782311 bytes_per_second=1.43716G/s
+FileHash/fnv1a/256                 294 ns          294 ns      2379275 bytes_per_second=830.064M/s
+FileHash/fnv1a/4096               4952 ns         4952 ns       141357 bytes_per_second=788.885M/s
+FileHash/fnv1a/65536             79484 ns        79473 ns         8806 bytes_per_second=786.43M/s
+FileHash/fnv1a/1048576         1272001 ns      1271820 ns          550 bytes_per_second=786.275M/s
+FileHash/fnv1a/16777216       20350940 ns     20348028 ns           34 bytes_per_second=786.317M/s
+...
+FileHash/crc32c_8/16              6.16 ns         6.16 ns    114090343 bytes_per_second=2.42011G/s
+FileHash/crc32c_8/256              204 ns          204 ns      3421773 bytes_per_second=1.16719G/s
+FileHash/crc32c_8/4096            3697 ns         3697 ns       189322 bytes_per_second=1056.62M/s
+FileHash/crc32c_8/65536          59610 ns        59601 ns        11745 bytes_per_second=1048.64M/s
+FileHash/crc32c_8/1048576       953992 ns       953926 ns          734 bytes_per_second=1048.3M/s
+FileHash/crc32c_8/16777216    15264389 ns     15263529 ns           46 bytes_per_second=1048.25M/s
+...
 FileHash/crc32c_64/16             6.67 ns         6.67 ns    104924455 bytes_per_second=2.23387G/s
 FileHash/crc32c_64/256            14.9 ns         14.9 ns     46896722 bytes_per_second=15.9996G/s
 FileHash/crc32c_64/4096            465 ns          465 ns      1505399 bytes_per_second=8.20575G/s
 FileHash/crc32c_64/65536          7753 ns         7753 ns        90290 bytes_per_second=7.87262G/s
 FileHash/crc32c_64/1048576      124573 ns       124566 ns         5630 bytes_per_second=7.83971G/s
 FileHash/crc32c_64/16777216    1989719 ns      1989606 ns          352 bytes_per_second=7.85332G/s
-...
-FileHash/fnv1a_32/16              10.4 ns         10.4 ns     67782311 bytes_per_second=1.43716G/s
-FileHash/fnv1a_32/256              294 ns          294 ns      2379275 bytes_per_second=830.064M/s
-FileHash/fnv1a_32/4096            4952 ns         4952 ns       141357 bytes_per_second=788.885M/s
-FileHash/fnv1a_32/65536          79484 ns        79473 ns         8806 bytes_per_second=786.43M/s
-FileHash/fnv1a_32/1048576      1272001 ns      1271820 ns          550 bytes_per_second=786.275M/s
-FileHash/fnv1a_32/16777216    20350940 ns     20348028 ns           34 bytes_per_second=786.317M/s
 ```
 
 Something like [xxhash](https://github.com/Cyan4973/xxHash) will be faster still, but now we've left
