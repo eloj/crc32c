@@ -6,8 +6,10 @@ CXXFLAGS=-std=gnu++17 -fno-rtti $(OPT) $(MISCFLAGS) $(WARNFLAGS)
 
 all: crc32c-argv crc32c-stdin
 
-crc32c-argv: crc32c-argv.c
-crc32c-stdin: crc32c-stdin.c
+crc32c-argv: crc32c-argv.c crc32c.c crc32c.h
+	$(CC) $(CFLAGS) $< -o $@
+crc32c-stdin: crc32c-stdin.c crc32c.c crc32c.h
+	$(CC) $(CFLAGS) $< -o $@
 hash-bench: hash-bench.cpp crc32c.o fnv.o
 	$(CXX) $(CXXFLAGS) $+ -lbenchmark -pthread -o $@
 
