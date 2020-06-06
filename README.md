@@ -45,6 +45,9 @@ FileHash/fnv1a_32/16777216    20350940 ns     20348028 ns           34 bytes_per
 Something like [xxhash](https://github.com/Cyan4973/xxHash) will be faster still, but now we've left
 the domain of "easy to just copy'n'paste or implement from scratch" behind.
 
+It should be said that an argument can be made that you probably want a 64-bit hash nowadays, which is
+fair enough.
+
 ## Alternative implementations
 
 I've provided `crc32c_64` which consumes blocks of 64-bits, then a 32-bit word
@@ -64,6 +67,9 @@ and extend the 'duff-style' switch to process up to seven octets.
 
 I can heartily recommend pasting functions into the [compiler explorer](https://godbolt.org),
 comparing the assembly output of the different functions on different compilers. Just remember to add optimization flags.
+
+The code uses the `__builtin_ia32_crc32{d,s,q}i` family of built-ins, but could also be written
+in terms of Intel's `_mm_crc32_u{8,32,64}` [intrinsics](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_crc32_u) by including the `nmmintrin.h` header.
 
 ## Features
 
