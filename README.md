@@ -87,10 +87,6 @@ comparing the assembly output of the different functions on different compilers.
 The code uses the `__builtin_ia32_crc32{d,s,q}i` family of built-ins, but could also be written
 in terms of Intel's `_mm_crc32_u{8,32,64}` [intrinsics](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_crc32_u) by including the `nmmintrin.h` header.
 
-## Features
-
-* Uses `memcpy()` instead of casts to avoid UB; no alignment issues.
-
 ## Benchmark
 
 Issue `make bench` to run it.
@@ -111,7 +107,7 @@ int main(int argc, char *argv[]) {
 	size_t len = strlen(data);
 
 	uint32_t crc = ~0;
-	crc = crc32c_64(crc, data, len);
+	crc = crc32c(crc, data, len);
 	printf("crc32c('%s'): 0x%08x\n", data, crc ^ ~0);
 
 	return EXIT_SUCCESS;

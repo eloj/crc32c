@@ -5,9 +5,6 @@
 	Three different examples, using 8-, 32- and 64-bit versions of the CRC32c CPU instructions.
 	Just copy'n'paste the version you want.
 
-	Note the use of memcpy() to avoid issues with undefined behaviour (UB) due to alignment
-	or type punning. The compiler will elide it when optimizing.
-
 	Recommend to inspect generated code for individual functions using https://godbolt.org
 
 	To compare with external test vectors, the initial CRC should be -1, and you need a final xor with -1.
@@ -17,6 +14,10 @@
 #include "crc32c.h"
 
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef uint32_t(*crc32c_func_t)(uint32_t crc, const void *data, size_t len);
 
 /*
 	Calculate the CRC32c of a block of memory, in 8-bit units.
@@ -94,3 +95,18 @@ uint32_t crc32c_64(uint32_t crc, const void *data, size_t len) {
 
 	return crc;
 }
+
+uint32_t fallback_crc32c(uint32_t crc, const void *data, size_t len) {
+	// Not implemented!
+	fprintf(stderr, "fallback crc32c function not available, aborting.");
+	abort();
+}
+
+static crc32c_func_t runtime_resolve_crc32c(void) {
+	__builtin_cpu_init();
+	if (__builtin_cpu_supports("sse4.2"))
+		return crc32c_64;
+	return fallback_crc32c;
+}
+
+uint32_t crc32c(uint32_t crc, const void *data, size_t len) __attribute__ ((ifunc ("runtime_resolve_crc32c")));

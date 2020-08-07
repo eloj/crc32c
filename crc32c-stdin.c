@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	uint32_t crc = ~0;
 
 	while ((len = read(0, buf, sizeof(buf))) > 0) {
-		crc = crc32c_64(crc, buf, len);
+		crc = crc32c(crc, buf, len);
 	}
 
 	printf("crc32c: 0x%08x\n", crc ^ ~0);
