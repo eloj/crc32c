@@ -100,15 +100,15 @@ which is available as `libbenchmark-dev` on Debian and Ubuntu.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "crc32c.c"
+#include "crc32c.h"
 
 int main(int argc, char *argv[]) {
 	const char *data = "123456789"; // -> 0xe3069283
 	size_t len = strlen(data);
 
-	uint32_t crc = ~0;
+	uint32_t crc = ~(uint32_t)0;
 	crc = crc32c(crc, data, len);
-	printf("crc32c('%s'): 0x%08x\n", data, crc ^ ~0);
+	printf("crc32c('%s'): 0x%08x\n", data, crc ^ ~(uint32_t)0);
 
 	return EXIT_SUCCESS;
 }
