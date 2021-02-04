@@ -1,5 +1,7 @@
 # CRC32c using SSE4.2
 
+![Build status](https://github.com/eloj/crc32c/workflows/build/badge.svg)
+
 A few examples of how to use compiler built-ins to use the CRC32 instructions
 provided by SSE4.2 on IA32/AMD64 CPUs.
 
