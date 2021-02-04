@@ -18,22 +18,16 @@
 #include <stdlib.h>
 #include <assert.h>
 
-// Table for software fallback
+// Global table for software fallback ('reversed' for right-shifts)
 static uint32_t crc32c_table[256];
 
 typedef uint32_t(*crc32c_func_t)(uint32_t crc, const void *data, size_t len);
-
-#ifdef HASHBENCH
-#define EXPORTED
-#else
-#define EXPORTED static
-#endif
 
 /*
 	Calculate the CRC32c of a block of memory, in 8-bit units.
 */
 __attribute__ ((target ("sse4.2")))
-EXPORTED uint32_t crc32c_8(uint32_t crc, const void *data, size_t len) {
+uint32_t crc32c_8(uint32_t crc, const void *data, size_t len) {
 	const uint8_t *src = data;
 
 	for (size_t i=0 ; i < len ; ++i) {
@@ -47,7 +41,7 @@ EXPORTED uint32_t crc32c_8(uint32_t crc, const void *data, size_t len) {
 	Calculate the CRC32c of a block of memory, in 32-bit units.
 */
 __attribute__ ((target ("sse4.2")))
-EXPORTED uint32_t crc32c_32(uint32_t crc, const void *data, size_t len) {
+uint32_t crc32c_32(uint32_t crc, const void *data, size_t len) {
 	const uint8_t *src = data;
 
 	for (size_t i=0 ; i < len >> 2; ++i) {
@@ -75,7 +69,7 @@ EXPORTED uint32_t crc32c_32(uint32_t crc, const void *data, size_t len) {
 	Calculate the CRC32c of a block of memory, in 64-bit units.
 */
 __attribute__ ((target ("sse4.2")))
-EXPORTED uint32_t crc32c_64(uint32_t crc, const void *data, size_t len) {
+uint32_t crc32c_64(uint32_t crc, const void *data, size_t len) {
 	const uint8_t *src = data;
 
 	for (size_t i=0 ; i < len >> 3; ++i) {
@@ -106,7 +100,15 @@ EXPORTED uint32_t crc32c_64(uint32_t crc, const void *data, size_t len) {
 	return crc;
 }
 
-EXPORTED void build_crc_table(uint32_t *table, uint32_t inv_poly) {
+uint32_t crc32c_soft(uint32_t crc, const void *data, size_t len) {
+	assert(crc32c_table[1] == 0xf26b8303);
+	unsigned char const *p = data;
+	while (len--)
+		crc = crc32c_table[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+	return crc;
+}
+
+static void crc32_build_table(uint32_t *table, uint32_t inv_poly) {
 	for (int i=0 ; i < 256 ; ++i) {
 		uint32_t res = i;
 		for (int j=0 ; j < 8 ; ++j) {
@@ -116,24 +118,16 @@ EXPORTED void build_crc_table(uint32_t *table, uint32_t inv_poly) {
 	}
 }
 
-EXPORTED void crc32_initialize() {
-	build_crc_table(crc32c_table, 0x82F63B78); // 0x1EDC6F41 bit-reversed
-}
-
-EXPORTED uint32_t crc32c_tbl(uint32_t crc, const void *data, size_t len) {
-	assert(crc32c_table[1] == 0xf26b8303);
-	unsigned char const *p = data;
-	while (len--)
-		crc = crc32c_table[(crc ^ *p++) & 0xFF] ^(crc >> 8);
-	return crc;
+void crc32c_initialize() {
+	crc32_build_table(crc32c_table, 0x82F63B78); // 0x1EDC6F41 bit-reversed
 }
 
 static crc32c_func_t runtime_resolve_crc32c(void) {
 	__builtin_cpu_init();
 	if (__builtin_cpu_supports("sse4.2"))
 		return crc32c_64;
-	crc32_initialize();
-	return crc32c_tbl;
+	crc32c_initialize();
+	return crc32c_soft;
 }
 
 uint32_t crc32c(uint32_t crc, const void *data, size_t len) __attribute__ ((ifunc ("runtime_resolve_crc32c")));

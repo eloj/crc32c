@@ -11,14 +11,6 @@
 #include "crc32c.h"
 #include "fnv.h"
 
-extern "C" {
-	void crc32_initialize();
-	uint32_t crc32c_8(uint32_t crc, const void *data, size_t len);
-	uint32_t crc32c_32(uint32_t crc, const void *data, size_t len);
-	uint32_t crc32c_64(uint32_t crc, const void *data, size_t len);
-	uint32_t crc32c_tbl(uint32_t crc, const void *data, size_t len);
-}
-
 static void* read_file(const char *filename, size_t *limit) {
 	void *keys = NULL;
 	size_t bytes = 0;
@@ -54,7 +46,7 @@ public:
 
 	void SetUp(const ::benchmark::State& state) {
 		if (!org_data) {
-			crc32_initialize();
+			crc32c_initialize();
 			org_size = 0;
 			org_data = static_cast<const uint8_t*>(read_file("hash-bench.cpp", &org_size));
 			assert(org_size);
@@ -115,14 +107,14 @@ BENCHMARK_DEFINE_F(FileHash, crc32c_8)(benchmark::State &state) {
 	UpdateCounters(state);
 }
 
-BENCHMARK_DEFINE_F(FileHash, crc32c_tbl)(benchmark::State &state) {
+BENCHMARK_DEFINE_F(FileHash, crc32c_soft)(benchmark::State &state) {
 	for (auto _ : state) {
 		size_t bytes_left = state.range(0);
 		uint32_t hash = ~0;
 
 		while (bytes_left) {
 			size_t block_len = std::min(len, bytes_left);
-			benchmark::DoNotOptimize(hash = crc32c_tbl(hash, src, block_len));
+			benchmark::DoNotOptimize(hash = crc32c_soft(hash, src, block_len));
 			bytes_left -= block_len;
 		}
 	}
@@ -146,7 +138,7 @@ BENCHMARK_DEFINE_F(FileHash, fnv1a_32)(benchmark::State &state) {
 BENCHMARK_REGISTER_F(FileHash, crc32c_64)->RangeMultiplier(16)->Range(1, 1 << 24);
 BENCHMARK_REGISTER_F(FileHash, crc32c_32)->RangeMultiplier(16)->Range(1, 1 << 24);
 BENCHMARK_REGISTER_F(FileHash, crc32c_8)->RangeMultiplier(16)->Range(1, 1 << 24);
-BENCHMARK_REGISTER_F(FileHash, crc32c_tbl)->RangeMultiplier(16)->Range(1, 1 << 24);
+BENCHMARK_REGISTER_F(FileHash, crc32c_soft)->RangeMultiplier(16)->Range(1, 1 << 24);
 BENCHMARK_REGISTER_F(FileHash, fnv1a_32)->RangeMultiplier(16)->Range(1, 1 << 24);
 
 BENCHMARK_MAIN();
