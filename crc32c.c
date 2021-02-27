@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 
 // Global table for software fallback ('reversed' for right-shifts)
 static uint32_t crc32c_table[256];
@@ -100,6 +101,7 @@ uint32_t crc32c_64(uint32_t crc, const void *data, size_t len) {
 	return crc;
 }
 
+// PERF: The Sarwate method is not the fastest software implementation. See the various slice-by-{8,16,N} variants.
 uint32_t crc32c_soft(uint32_t crc, const void *data, size_t len) {
 	assert(crc32c_table[1] == 0xf26b8303);
 	unsigned char const *p = data;
@@ -112,7 +114,8 @@ static void crc32_build_table(uint32_t *table, uint32_t inv_poly) {
 	for (int i=0 ; i < 256 ; ++i) {
 		uint32_t res = i;
 		for (int j=0 ; j < 8 ; ++j) {
-			res = (res & 1) ? (res >> 1) ^ inv_poly : (res >> 1);
+			// res = (res & 1) ? (res >> 1) ^ inv_poly : (res >> 1);
+			res = (res >> 1) ^ (-(res & 1) & inv_poly); // branchless
 		}
 		crc32c_table[i] = res;
 	}
