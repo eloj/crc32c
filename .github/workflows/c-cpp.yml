@@ -1,19 +1,19 @@
+---
 name: build
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: make
-      run: make
-    - name: make test
-      run: make test
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build
+        run: make
+      - name: Test
+        run: make test
